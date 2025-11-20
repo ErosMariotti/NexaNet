@@ -64,19 +64,43 @@ def do_filter(ls, filter_data):
         web_site = i.get("website")
         phone = i.get("phone")
 
-        if min_rating is not None and (rating == '' or rating is None or rating < min_rating):
+        # ----- RATING -----
+        # Solo filtramos por rating si TENEMOS rating numérico
+        if min_rating is not None and rating is not None:
+            try:
+                r = float(rating)
+                if r < min_rating:
+                    return False
+            except (ValueError, TypeError):
+                # Si no se puede interpretar, lo dejamos pasar
+                pass
+
+        # ----- REVIEWS -----
+        if min_reviews is not None and reviews is not None:
+            try:
+                rv = int(reviews)
+                if rv < min_reviews:
+                    return False
+            except (ValueError, TypeError):
+                pass
+
+        if max_reviews is not None and reviews is not None:
+            try:
+                rv = int(reviews)
+                if rv > max_reviews:
+                    return False
+            except (ValueError, TypeError):
+                pass
+
+        # ----- WEBSITE -----
+        # has_website = True  -> exigir website
+        # has_website = False/None -> no filtrar por website
+        if has_website is True and not web_site:
             return False
 
-        if min_reviews is not None and (reviews == '' or reviews is None or reviews < min_reviews):
-            return False
-
-        if max_reviews is not None and (reviews == '' or reviews is None or reviews > max_reviews):
-            return False
-
-        if has_website is not None and (has_website is False and web_site is not None):
-            return False
-
-        if has_phone is not None and (has_phone is True and (phone is None or phone == '')):
+        # ----- PHONE -----
+        # has_phone = True -> exigir teléfono
+        if has_phone is True and (phone is None or phone == ''):
             return False
 
         return True
@@ -87,7 +111,7 @@ def do_filter(ls, filter_data):
 def sort_dict_by_keys(dictionary, keys):
     new_dict = {}
     for key in keys:
-        new_dict[key] = dictionary[key]
+        new_dict[key] = dictionary.get(key)
     return new_dict
 
 
@@ -127,12 +151,33 @@ def clean(data_list, query):
                 "data_id"
                 ]
 
-    new_results = do_filter(data_list, query.get("filter", {}))
+    # Armamos los filtros a partir del query
+    filter_data = {
+        "min_rating": query.get("min_rating"),
+        "min_reviews": query.get("min_reviews"),
+        "max_reviews": query.get("max_reviews"),
+        "has_phone": query.get("has_phone"),
+        "has_website": query.get("has_website"),
+    }
+
+    print("Filter data:", filter_data)
+    print("Items before filter:", len(data_list))
+
+    new_results = do_filter(data_list, filter_data)
+
+    print("Items after filter:", len(new_results))
+
+    # PARACAÍDAS: si el filtro se comió todo, usamos los datos sin filtrar
+    if not new_results and data_list:
+        print("Warning: filter removed all items, using unfiltered data instead.")
+        new_results = data_list
+
     new_results = do_sort(new_results, query)
 
     new_results = [sort_dict_by_keys(x, keys) for x in new_results]
 
     return new_results
+
 
 
 class ScrapeGoogleMapsLinksTask(BaseTask):

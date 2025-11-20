@@ -4,7 +4,10 @@ from src import config
 from src.scrape_google_maps_links_task import ScrapeGoogleMapsLinksTask
 from bose.launch_tasks import launch_tasks
 
+
+
 class GoogleMapsScraperApp(QMainWindow):
+    
     def __init__(self):
         super().__init__()
 

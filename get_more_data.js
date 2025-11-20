@@ -1,14 +1,32 @@
 function parse() {
-	let inputString = window.APP_INITIALIZATION_STATE[3][6];
-	let substringToRemove = ")]}'";
+    const state = window.APP_INITIALIZATION_STATE;
 
-	let modifiedString;
-	if (inputString.startsWith(substringToRemove)) {
-		modifiedString = inputString.slice(substringToRemove.length);
-	} else {
-	}
-	return JSON.parse(modifiedString);
+    // Si no existe o no tiene la estructura esperada, devolvemos un objeto vacío
+    if (!state || !state[3] || !state[3][6]) {
+        console.log("APP_INITIALIZATION_STATE structure not as expected");
+        return {};
+    }
+
+    let inputString = state[3][6];
+    const substringToRemove = ")]}'";
+
+    if (typeof inputString !== "string") {
+        console.log("inputString is not a string");
+        return {};
+    }
+
+    if (inputString.startsWith(substringToRemove)) {
+        inputString = inputString.slice(substringToRemove.length);
+    }
+
+    try {
+        return JSON.parse(inputString);
+    } catch (e) {
+        console.log("JSON parse error", e);
+        return {};
+    }
 }
+
 
 function get_categories(data) {
 	return data?.[6]?.[13];

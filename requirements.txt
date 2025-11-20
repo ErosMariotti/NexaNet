@@ -3,3 +3,5 @@ requests
 bose
 pydash
 PyQt5
+pandas
+openpyxl
