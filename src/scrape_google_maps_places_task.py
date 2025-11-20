@@ -4,6 +4,20 @@ from bose.utils import merge_dicts_in_one_dict, remove_nones
 import selenium
 from selenium.common.exceptions import JavascriptException
 import re
+import sys
+
+
+def resource_path(relative_path: str) -> str:
+    """
+    Devuelve la ruta correcta tanto en modo normal como dentro del .exe de PyInstaller.
+    """
+    if hasattr(sys, '_MEIPASS'):
+        # Cuando está empaquetado
+        base_path = sys._MEIPASS
+    else:
+        # Cuando lo corrés con Python normal
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
 
 class ScrapeGoogleMapsPlacesTask(BaseTask):
     task_config = TaskConfig(output_filename="all", log_time=False, close_on_crash=True)
